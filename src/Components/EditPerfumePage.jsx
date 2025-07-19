@@ -9,14 +9,14 @@ const EditPerfumePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        title: { en: '', ar: '' },
-        description: { en: '', ar: '' },
-        price: '',
-        about: { en: '', ar: '' },
-        productInfo: { en: '', ar: '' },
-        features: [{ feature: { en: '', ar: '' }, value: { en: '', ar: '' } }],
-        sizes: [{ en: '', ar: '' }],
-        ingredients: [{ key: { en: '', ar: '' }, value: { en: '', ar: '' } }],
+        title: { ar: '', tr: '' },
+        description: { ar: '', tr: '' },
+        sizesPricing: [{ size: 30, price: 0 }],
+        urlName: '',
+        about: { ar: '', tr: '' },
+        productInfo: { ar: '', tr: '' },
+        features: [{ feature: { ar: '', tr: '' }, value: { ar: '', tr: '' } }],
+        ingredients: [{ key: { ar: '', tr: '' }, value: { ar: '', tr: '' } }],
         is_favorite: false
     });
 
@@ -40,21 +40,35 @@ const EditPerfumePage = () => {
             const response = await axiosInstance.get(API_ENDPOINTS.GET_PERFUME(id));
             const perfume = response.data;
 
+            // Handle backward compatibility: convert old structure to new
+            let sizesPricing = [];
+            if (perfume.sizesPricing && perfume.sizesPricing.length > 0) {
+                // Already has new structure
+                sizesPricing = perfume.sizesPricing;
+            } else if (perfume.sizes && perfume.sizes.length > 0 && perfume.price) {
+                // Convert from old structure
+                sizesPricing = perfume.sizes.map(size => ({
+                    size: size,
+                    price: perfume.price
+                }));
+            } else {
+                // Default
+                sizesPricing = [{ size: 30, price: 0 }];
+            }
+
             setFormData({
-                title: perfume.title || { en: '', ar: '' },
-                description: perfume.description || { en: '', ar: '' },
-                price: perfume.price || '',
-                about: perfume.about || { en: '', ar: '' },
-                productInfo: perfume.productInfo || { en: '', ar: '' },
+                title: perfume.title || { ar: '', tr: '' },
+                description: perfume.description || { ar: '', tr: '' },
+                sizesPricing: sizesPricing,
+                urlName: perfume.urlName || '',
+                about: perfume.about || { ar: '', tr: '' },
+                productInfo: perfume.productInfo || { ar: '', tr: '' },
                 features: perfume.features?.length
                     ? perfume.features
-                    : [{ feature: { en: '', ar: '' }, value: { en: '', ar: '' } }],
-                sizes: perfume.sizes?.length
-                    ? perfume.sizes
-                    : [{ en: '', ar: '' }],
+                    : [{ feature: { ar: '', tr: '' }, value: { ar: '', tr: '' } }],
                 ingredients: perfume.ingredients?.length
                     ? perfume.ingredients
-                    : [{ key: { en: '', ar: '' }, value: { en: '', ar: '' } }],
+                    : [{ key: { ar: '', tr: '' }, value: { ar: '', tr: '' } }],
                 is_favorite: perfume.is_favorite || false
             });
 
@@ -108,7 +122,7 @@ const EditPerfumePage = () => {
     const addFeature = () => {
         setFormData({
             ...formData,
-            features: [...formData.features, { feature: { en: '', ar: '' }, value: { en: '', ar: '' } }]
+            features: [...formData.features, { feature: { ar: '', tr: '' }, value: { ar: '', tr: '' } }]
         });
     };
 
@@ -118,26 +132,24 @@ const EditPerfumePage = () => {
         setFormData({ ...formData, features: newFeatures });
     };
 
-    const handleSizeChange = (index, lang, value) => {
-        const newSizes = [...formData.sizes];
-        newSizes[index] = {
-            ...newSizes[index],
-            [lang]: value
-        };
-        setFormData({ ...formData, sizes: newSizes });
+    // Updated size-price handling
+    const handleSizePriceChange = (index, field, value) => {
+        const newSizesPricing = [...formData.sizesPricing];
+        newSizesPricing[index][field] = field === 'size' ? parseInt(value) || 0 : parseFloat(value) || 0;
+        setFormData({ ...formData, sizesPricing: newSizesPricing });
     };
 
-    const addSize = () => {
+    const addSizePrice = () => {
         setFormData({
             ...formData,
-            sizes: [...formData.sizes, { en: '', ar: '' }]
+            sizesPricing: [...formData.sizesPricing, { size: 30, price: 0 }]
         });
     };
 
-    const removeSize = (index) => {
-        const newSizes = [...formData.sizes];
-        newSizes.splice(index, 1);
-        setFormData({ ...formData, sizes: newSizes });
+    const removeSizePrice = (index) => {
+        const newSizesPricing = [...formData.sizesPricing];
+        newSizesPricing.splice(index, 1);
+        setFormData({ ...formData, sizesPricing: newSizesPricing });
     };
 
     const handleIngredientChange = (index, field, lang, value) => {
@@ -152,7 +164,7 @@ const EditPerfumePage = () => {
     const addIngredient = () => {
         setFormData({
             ...formData,
-            ingredients: [...formData.ingredients, { key: { en: '', ar: '' }, value: { en: '', ar: '' } }]
+            ingredients: [...formData.ingredients, { key: { ar: '', tr: '' }, value: { ar: '', tr: '' } }]
         });
     };
 
@@ -174,14 +186,27 @@ const EditPerfumePage = () => {
         e.preventDefault();
 
         // Validate required fields
-        if (!formData.title.ar && !formData.title.en) {
-            showErrorToast('يرجى إدخال عنوان العطر باللغة العربية أو الإنجليزية');
+        if (!formData.title.ar && !formData.title.tr) {
+            showErrorToast('يرجى إدخال عنوان العطر باللغة العربية أو التركية');
             return;
         }
 
-        if (!formData.description.ar && !formData.description.en) {
-            showErrorToast('يرجى إدخال وصف العطر باللغة العربية أو الإنجليزية');
+        if (!formData.description.ar && !formData.description.tr) {
+            showErrorToast('يرجى إدخال وصف العطر باللغة العربية أو التركية');
             return;
+        }
+
+        if (!formData.sizesPricing || formData.sizesPricing.length === 0) {
+            showErrorToast('At least one size with price is required');
+            return;
+        }
+
+        // Validate each size-price pair
+        for (const sp of formData.sizesPricing) {
+            if (!sp.size || !sp.price || sp.size <= 0 || sp.price <= 0) {
+                showErrorToast('Each size must have a valid size (ml) and price');
+                return;
+            }
         }
 
         setLoading(true);
@@ -205,7 +230,6 @@ const EditPerfumePage = () => {
                 });
             }
 
-            // Need to override the default content-type for multipart/form-data
             await axiosInstance.put(API_ENDPOINTS.UPDATE_PERFUME(id), perfumeFormData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -215,7 +239,6 @@ const EditPerfumePage = () => {
             closeLoading();
             showSuccessToast('تم تحديث العطر بنجاح');
 
-            // Redirect after a short delay
             setTimeout(() => {
                 navigate('/products');
             }, 1000);
@@ -231,7 +254,11 @@ const EditPerfumePage = () => {
 
     const renderLanguageTab = (lang) => {
         const isArabic = lang === 'ar';
-        const langLabel = isArabic ? 'العربية' : 'الإنجليزية';
+        const isTurkish = lang === 'tr';
+
+        let langLabel = '';
+        if (isArabic) langLabel = 'العربية';
+        else if (isTurkish) langLabel = 'التركية';
 
         return (
             <div className={activeTab === lang ? 'tab-content active' : 'tab-content'}>
@@ -311,33 +338,6 @@ const EditPerfumePage = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>الأحجام ({langLabel})</label>
-                    {formData.sizes.map((size, index) => (
-                        <div key={`size-${index}-${lang}`} className="size-item">
-                            <input
-                                type="text"
-                                placeholder={`الحجم (${langLabel})`}
-                                value={size[lang]}
-                                onChange={(e) => handleSizeChange(index, lang, e.target.value)}
-                                required={isArabic}
-                            />
-                            {index === 0 && formData.sizes.length === 1 ? null : (
-                                <button
-                                    type="button"
-                                    className="remove-btn"
-                                    onClick={() => removeSize(index)}
-                                >
-                                    حذف
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                    <button type="button" className="add-btn" onClick={addSize}>
-                        إضافة حجم
-                    </button>
-                </div>
-
-                <div className="form-group">
                     <label>المكونات ({langLabel})</label>
                     {formData.ingredients.map((ingredient, index) => (
                         <div key={`ingredient-${index}-${lang}`} className="ingredient-item">
@@ -398,25 +398,100 @@ const EditPerfumePage = () => {
                     </button>
                     <button
                         type="button"
-                        className={activeTab === 'en' ? 'tab-btn active' : 'tab-btn'}
-                        onClick={() => setActiveTab('en')}
+                        className={activeTab === 'tr' ? 'tab-btn active' : 'tab-btn'}
+                        onClick={() => setActiveTab('tr')}
                     >
-                        الإنجليزية
+                        التركية
                     </button>
                 </div>
 
                 {renderLanguageTab('ar')}
-                {renderLanguageTab('en')}
+                {renderLanguageTab('tr')}
 
                 <div className="form-group">
-                    <label htmlFor="price">السعر</label>
+                    <label htmlFor="urlName">اسم الرابط</label>
                     <input
-                        type="number"
-                        id="price"
-                        name="price"
-                        value={formData.price}
+                        type="text"
+                        id="urlName"
+                        name="urlName"
+                        value={formData.urlName}
                         onChange={handleInputChange}
+                        placeholder="e.g., elegant-rose-perfume"
                         required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>الأحجام والأسعار</label>
+                    {formData.sizesPricing.map((sizePrice, index) => (
+                        <div key={`size-price-${index}`} className="size-price-item">
+                            <input
+                                type="number"
+                                placeholder="الحجم بالملليلتر"
+                                value={sizePrice.size}
+                                onChange={(e) => handleSizePriceChange(index, 'size', e.target.value)}
+                                min="1"
+                                required
+                                className="size-input"
+                            />
+                            <span className="size-unit">ml</span>
+                            <input
+                                type="number"
+                                placeholder="السعر"
+                                value={sizePrice.price}
+                                onChange={(e) => handleSizePriceChange(index, 'price', e.target.value)}
+                                min="0"
+                                step="0.01"
+                                required
+                                className="price-input"
+                            />
+                            <span className="price-unit">$</span>
+                            {index === 0 && formData.sizesPricing.length === 1 ? null : (
+                                <button
+                                    type="button"
+                                    className="remove-btn"
+                                    onClick={() => removeSizePrice(index)}
+                                >
+                                    حذف
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    <button type="button" className="add-btn" onClick={addSizePrice}>
+                        إضافة حجم وسعر
+                    </button>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="mainImage">الصورة الرئيسية (اترك فارغًا لعدم التغيير)</label>
+                    {currentImages.main && (
+                        <div className="current-image">
+                            <img src={`${BASE_URL}/${currentImages.main}`} alt="الصورة الحالية" style={{ maxWidth: '200px', height: 'auto' }} />
+                        </div>
+                    )}
+                    <input
+                        type="file"
+                        id="mainImage"
+                        accept="image/*"
+                        onChange={handleMainImageChange}
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="sliderImages">صور العرض (اترك فارغًا لعدم التغيير)</label>
+                    {currentImages.slider && currentImages.slider.length > 0 && (
+                        <div className="current-images">
+                            {currentImages.slider.map((img, index) => (
+                                <img key={index} src={`${BASE_URL}/${img}`} alt={`صورة ${index + 1}`} style={{ maxWidth: '150px', height: 'auto', margin: '5px' }} />
+                            ))}
+                        </div>
+                    )}
+                    <input
+                        type="file"
+                        id="sliderImages"
+                        accept="image/*"
+                        multiple
+                        onChange={handleSliderImagesChange}
                     />
                 </div>
 
@@ -428,53 +503,6 @@ const EditPerfumePage = () => {
                         name="is_favorite"
                         checked={formData.is_favorite}
                         onChange={handleInputChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label>الصورة الرئيسية الحالية</label>
-                    {currentImages.main && (
-                        <div className="current-image">
-                            <img
-                                src={currentImages.main.startsWith('http')
-                                    ? currentImages.main
-                                    : `${BASE_URL}/${currentImages.main}`}
-                                alt="الصورة الرئيسية الحالية"
-                                className="preview-image"
-                            />
-                        </div>
-                    )}
-                    <label htmlFor="mainImage">تحميل صورة رئيسية جديدة (اختياري)</label>
-                    <input
-                        type="file"
-                        id="mainImage"
-                        accept="image/*"
-                        onChange={handleMainImageChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label>صور العرض الحالية</label>
-                    <div className="current-images-grid">
-                        {currentImages.slider && currentImages.slider.map((img, index) => (
-                            <div className="current-image" key={index}>
-                                <img
-                                    src={img.startsWith('http')
-                                        ? img
-                                        : `${BASE_URL}/${img}`}
-                                    alt={`صورة العرض ${index}`}
-                                    className="preview-image"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                    <label htmlFor="sliderImages">تحميل صور عرض جديدة (اختياري، ستحل محل جميع الصور الحالية)</label>
-                    <input
-                        type="file"
-                        id="sliderImages"
-                        accept="image/*"
-                        multiple
-                        onChange={handleSliderImagesChange}
                     />
                 </div>
 

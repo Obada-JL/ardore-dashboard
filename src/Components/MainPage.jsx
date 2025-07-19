@@ -1,8 +1,11 @@
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Container, Row, Col } from "react-bootstrap";
+import { useLanguage } from "../context/LanguageContext";
 import "./MainPage.css";
 
 export default function MainPage() {
+  const { t, isRTL } = useLanguage();
+
   return (
     <Container fluid className="main-page">
       <Row className="align-items-center justify-content-center min-vh-50">
@@ -18,13 +21,10 @@ export default function MainPage() {
         <Col lg={6} md={12} className="order-md-1 text-center welcome-content">
           <div className="welcome-text">
             <h2 className="welcome-title">
-              اهلا بكم في لوحة التحكم <br className="d-none d-lg-block" />
-              الخاصة بشركة
-              <br /><span className="text-secondary ms-1 me-1">Ardore</span><br />
-              للعطورات المميزة
+              {t('welcomeTitle')}
             </h2>
             <p className="welcome-subtitle">
-              يمكنكم البدء باختيار قسم من القائمة أعلاه
+              {t('welcomeSubtitle')}
             </p>
           </div>
         </Col>

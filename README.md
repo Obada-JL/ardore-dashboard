@@ -8,7 +8,7 @@ Admin dashboard for managing Ardore Perfume products and services.
 2. Install dependencies with `npm install`
 3. Create a `.env` file in the root directory with the following variables:
    ```
-   VITE_API_BASE_URL=http://localhost:4000
+   VITE_API_BASE_URL=http://localhost:5000
    ```
    Change the URL to match your API server.
 4. Run the development server with `npm run dev`

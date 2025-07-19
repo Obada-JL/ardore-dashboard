@@ -3,23 +3,26 @@ import Logo from "../assets/homelogo.png";
 import "./NavBar.css";
 import Swal from "sweetalert2";
 import { useState } from "react";
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap';
+import { useLanguage } from "../context/LanguageContext";
 import { showConfirmDialog, showSuccessToast } from "../utils/toast";
 
 export default function NavBar() {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const { currentLanguage, changeLanguage, t, availableLanguages, isRTL } = useLanguage();
 
   const handleLogout = () => {
     showConfirmDialog({
-      title: "Are you sure?",
-      text: "You will be logged out!",
+      title: t('deleteConfirm'),
+      text: t('logoutConfirm'),
       icon: "warning",
-      confirmButtonText: "Yes, logout!",
+      confirmButtonText: t('yes'),
+      cancelButtonText: t('no'),
     }).then((result) => {
       if (result.isConfirmed) {
         localStorage.clear();
-        showSuccessToast("Logged out successfully");
+        showSuccessToast(t('logoutSuccess'));
 
         setTimeout(() => {
           window.location.href = "/login";
@@ -28,48 +31,93 @@ export default function NavBar() {
     });
   };
 
+  const handleLanguageChange = (langCode) => {
+    changeLanguage(langCode);
+    setExpanded(false);
+  };
+
   return (
-    <Navbar expanded={expanded} expand="lg" className="navbar ms-lg-5 me-lg-5 mt-2" dir="rtl">
+    <Navbar
+      expanded={expanded}
+      expand="lg"
+      className="navbar ms-lg-5 me-lg-5 mt-2"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <Container fluid>
-        <Navbar.Brand href="/">
-          <img src={Logo} alt="شعار" className="navbar__logo" style={{ maxHeight: '50px' }} />
+        <Navbar.Brand as={Link} to="/">
+          <img
+            src={Logo}
+            alt={t('dashboard')}
+            className="navbar__logo"
+            style={{ maxHeight: '50px' }}
+          />
         </Navbar.Brand>
+
         <Navbar.Toggle
           aria-controls="basic-navbar-nav"
           onClick={() => setExpanded(!expanded)}
         />
+
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>الرئيسية</Nav.Link>
-            {/* <Nav.Link as={Link} to="/projects" onClick={() => setExpanded(false)}>المشاريع</Nav.Link> */}
-            {/* <Nav.Link as={Link} to="/campagins" onClick={() => setExpanded(false)}>الحملات</Nav.Link> */}
-            {/* <Nav.Link as={Link} to="/sponsorship" onClick={() => setExpanded(false)}>الكفالات</Nav.Link> */}
-            {/* <Nav.Link as={Link} to="/documentations" onClick={() => setExpanded(false)}>التوثيقات</Nav.Link> */}
-            <Nav.Link as={Link} to="/products" onClick={() => setExpanded(false)}>المنتجات</Nav.Link>
-            <Nav.Link as={Link} to="/messages" onClick={() => setExpanded(false)}>الرسائل</Nav.Link>
-            <Nav.Link as={Link} to="/users" onClick={() => setExpanded(false)}>المستخدمين</Nav.Link>
-            <Nav.Link as={Link} to="/about" onClick={() => setExpanded(false)}>حول</Nav.Link>
-            {/* <Nav.Link as={Link} to="/perfumes/add" onClick={() => setExpanded(false)}>إضافة عطر</Nav.Link> */}
-            {/* <Nav.Link as={Link} to="/others" onClick={() => setExpanded(false)}>أخرى</Nav.Link> */}
-          </Nav>
-          <div className="d-flex align-items-center me-3">
-            <button
-              className="btn btn-link text-dark p-0"
-              onClick={handleLogout}
-              style={{ textDecoration: 'none' }}
+          <Nav className={isRTL ? "me-auto" : "ms-auto"}>
+            <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>
+              {t('home')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/products" onClick={() => setExpanded(false)}>
+              {t('products')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/orders" onClick={() => setExpanded(false)}>
+              {t('orders')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/discounts" onClick={() => setExpanded(false)}>
+              {t('discounts')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/messages" onClick={() => setExpanded(false)}>
+              {t('messages')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/users" onClick={() => setExpanded(false)}>
+              {t('users')}
+            </Nav.Link>
+            <Nav.Link as={Link} to="/about" onClick={() => setExpanded(false)}>
+              {t('about')}
+            </Nav.Link>
+
+            {/* Language Selector */}
+            <Dropdown
+              className="d-inline-block"
+              drop={isRTL ? "start" : "end"}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                className="bi bi-person"
-                viewBox="0 0 16 16"
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                id="language-dropdown"
+                size="sm"
+                className="ms-2"
               >
-                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
-              </svg>
-            </button>
-          </div>
+                {availableLanguages.find(lang => lang.code === currentLanguage)?.flag} {t('language')}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                {availableLanguages.map((language) => (
+                  <Dropdown.Item
+                    key={language.code}
+                    onClick={() => handleLanguageChange(language.code)}
+                    active={currentLanguage === language.code}
+                  >
+                    {language.flag} {language.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+
+            {/* Logout Button */}
+            <Nav.Link
+              onClick={handleLogout}
+              className="text-danger ms-2"
+              style={{ cursor: 'pointer' }}
+            >
+              {t('logout')}
+            </Nav.Link>
+          </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>

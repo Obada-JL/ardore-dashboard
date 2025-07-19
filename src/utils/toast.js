@@ -1,97 +1,140 @@
 import Swal from 'sweetalert2';
 
 // Success toast notification
-export const showSuccessToast = (message = 'Operation completed successfully') => {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
-    });
-
-    Toast.fire({
-        icon: 'success',
-        title: message
-    });
+export const showSuccessToast = (message) => {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: message,
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
 };
 
 // Error toast notification
-export const showErrorToast = (message = 'An error occurred') => {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
-    });
-
-    Toast.fire({
-        icon: 'error',
-        title: message
-    });
+export const showErrorToast = (message) => {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'error',
+    title: message,
+    showConfirmButton: false,
+    timer: 4000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
 };
 
 // Warning toast notification
 export const showWarningToast = (message) => {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
-    });
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'warning',
+    title: message,
+    showConfirmButton: false,
+    timer: 3500,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
+};
 
-    Toast.fire({
-        icon: 'warning',
-        title: message
-    });
+// Info toast notification
+export const showInfoToast = (message) => {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'info',
+    title: message,
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer);
+      toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
 };
 
 // Confirmation dialog
-export const showConfirmDialog = (options = {}) => {
-    const defaultOptions = {
-        title: 'Are you sure?',
-        text: 'Do you want to proceed with this action?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, proceed',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
-    };
+export const showConfirmDialog = (options) => {
+  const defaultOptions = {
+    title: 'هل أنت متأكد؟',
+    text: 'لن تتمكن من التراجع عن هذا الإجراء',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'نعم',
+    cancelButtonText: 'إلغاء',
+    reverseButtons: true
+  };
 
-    return Swal.fire({
-        ...defaultOptions,
-        ...options
-    });
+  return Swal.fire({
+    ...defaultOptions,
+    ...options
+  });
 };
 
-// Loading indicator
-export const showLoading = (message = 'Processing...') => {
-    Swal.fire({
-        title: message,
-        allowEscapeKey: false,
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+// Loading dialog
+export const showLoading = (message = 'جاري التحميل...') => {
+  Swal.fire({
+    title: message,
+    allowEscapeKey: false,
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    willOpen: () => {
+      Swal.showLoading();
+    }
+  });
 };
 
-// Close loading indicator
+// Close loading dialog
 export const closeLoading = () => {
-    Swal.close();
+  Swal.close();
+};
+
+// Success dialog
+export const showSuccessDialog = (options) => {
+  const defaultOptions = {
+    icon: 'success',
+    confirmButtonColor: '#3085d6',
+    confirmButtonText: 'موافق'
+  };
+
+  return Swal.fire({
+    ...defaultOptions,
+    ...options
+  });
+};
+
+// Error dialog
+export const showErrorDialog = (options) => {
+  const defaultOptions = {
+    icon: 'error',
+    confirmButtonColor: '#d33',
+    confirmButtonText: 'موافق'
+  };
+
+  return Swal.fire({
+    ...defaultOptions,
+    ...options
+  });
+};
+
+// Custom alert
+export const showAlert = (options) => {
+  return Swal.fire(options);
 }; 

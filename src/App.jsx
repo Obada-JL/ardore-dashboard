@@ -4,18 +4,20 @@ import {
   Navigate,
 } from "react-router-dom";
 import "./App.css";
+import { LanguageProvider } from "./context/LanguageContext";
 import Login from "./Components/Login";
 import MainPage from "./Components/MainPage";
 import PageLayout from "./PageLayout";
 import NotFound from "./Components/404Page";
 import MessagesPage from "./Components/MessagesPage";
 import ProductsPage from "./Components/ProductsPage";
-// import ProductDetailsPage from "./Components/ProductDetailsPage";
 import UsersPage from "./Components/UsersPage";
 import AddPerfumePage from "./Components/AddPerfumePage";
 import EditPerfumePage from "./Components/EditPerfumePage";
 import AboutPage from "./Components/AboutPage";
 import AboutListPage from "./Components/AboutListPage";
+import DiscountsPage from "./Components/DiscountsPage";
+import OrdersPage from "./Components/OrdersPage";
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
@@ -35,7 +37,8 @@ function App() {
       children: [
         { path: "/", element: <MainPage /> },
         { path: "/products", element: <ProductsPage /> },
-        // { path: "/products/:id", element: <ProductDetailsPage /> },
+        { path: "/discounts", element: <DiscountsPage /> },
+        { path: "/orders", element: <OrdersPage /> },
         { path: "/messages", element: <MessagesPage /> },
         { path: "/users", element: <UsersPage /> },
         { path: "/about", element: <AboutListPage /> },
@@ -47,7 +50,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <LanguageProvider>
+      <RouterProvider router={router} />
+    </LanguageProvider>
+  );
 }
 
 export default App;
