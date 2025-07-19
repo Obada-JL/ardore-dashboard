@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://localhost:5000/api';
+export const BASE_URL = 'https://api.ardoreperfume.com/api';
 // export const BASE_URL = 'http://api.ardoreperfume.com/api';
 export const API_ENDPOINTS = {
     // Students
